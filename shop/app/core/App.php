@@ -28,11 +28,17 @@ $this->dispatch();
 }
 protected function dispatch(): void
 {
-if (!class_exists($this->controllerName)) {
+if (!preg_match('/^[A-Za-z][A-Za-z0-9_]*$/', $this->controllerName)
+|| !preg_match('/^[A-Za-z][A-Za-z0-9_]*$/', $this->action)) {
+$this->abort404('Ten controller/action khong hop le');
+}
+if (!class_exists($this->controllerName)
+|| (new ReflectionClass($this->controllerName))->isAbstract()) {
 $this->abort404('Khong tim thay controller: ' . $this->controllerName);
 }
 $controller = new $this->controllerName();
-if (!method_exists($controller, $this->action)) {
+if (!method_exists($controller, $this->action)
+|| !(new ReflectionMethod($controller, $this->action))->isPublic()) {
 $this->abort404('Khong tim thay action: ' . $this->action);
 }
 call_user_func_array([$controller, $this->action], $this->params);
