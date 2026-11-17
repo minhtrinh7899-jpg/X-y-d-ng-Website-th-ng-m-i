@@ -1,11 +1,11 @@
 <?php
 // public/index.php
-
 // Front controller - diem vao DUY NHAT cua toan bo ung dung
-session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax']);
 session_start();
+
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../app/core/helpers.php';
+
 // Tu dong nap class theo ten file, khong phai require thu cong tung noi
 spl_autoload_register(function (string $class): void {
     $directories = [
@@ -23,4 +23,5 @@ spl_autoload_register(function (string $class): void {
         }
     }
 });
+
 new App();

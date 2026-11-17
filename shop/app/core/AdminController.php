@@ -6,11 +6,15 @@ abstract class AdminController extends Controller
 {
     public function __construct()
     {
-        // Chua dang nhap -> ve trang dang nhap QUAN TRI; sai vai tro -> 403
-        Auth::requireRole(['admin', 'staff'], 'admin/auth/login');
+        // Chua dang nhap -> dua ve trang dang nhap QUAN TRI (khong phai trang khach hang)
+        if (!Auth::check()) {
+            flash('error', 'Vui lòng đăng nhập tài khoản quản trị.');
+            $this->redirect('admin/auth/login');
+        }
+        Auth::requireRole(['admin', 'staff']);
     }
-    protected function view(string $view, array $data = [], string|false
-    $layout = 'admin'): void
+
+    protected function view(string $view, array $data = [], string|false $layout = 'admin'): void
     {
         parent::view($view, $data, $layout);
     }
