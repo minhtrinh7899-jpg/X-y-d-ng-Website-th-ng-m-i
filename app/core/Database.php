@@ -5,6 +5,10 @@ class Database
 {
     private static ?PDO $instance = null;
 
+    /** Bo dem thu cong, phuc vu BAI TAP quan sat so truy van tren 1 trang (xem Buoi 5, muc 5).
+     *  KHONG phai co che tu dong - noi nao muon dem thi tu tang bien nay truoc khi execute(). */
+    public static int $queryCount = 0;
+
     /** Tra ve doi tuong PDO duy nhat cho toan ung dung. */
     public static function getInstance(): PDO
     {
@@ -27,11 +31,7 @@ class Database
     }
 
     // Khong cho phep tao doi tuong hay sao chep tu ben ngoai
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
-    private function __clone()
-    {
-    }
+    private function __clone() {}
 }
