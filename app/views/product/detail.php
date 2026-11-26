@@ -1,42 +1,49 @@
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="<?= e(base_url('')) ?>">Trang chủ</a></li>
-        <?php if ($category): ?>
-            <li class="breadcrumb-item">
-                <a href="<?= e(base_url('category/show/' . $category['slug'])) ?>"><?= e($category['name']) ?></a>
-            </li>
-        <?php endif; ?>
+        <li class="breadcrumb-item"><a href="<?= e(base_url('')) ?>">Trang
+                chủ</a></li>
+        <li class="breadcrumb-item">
+            <a href="<?= e(base_url('category/show/' . $category['slug']))
+                        ?>"><?= e($category['name']) ?></a>
+        </li>
         <li class="breadcrumb-item active"><?= e($product['name']) ?></li>
     </ol>
 </nav>
-
 <div class="row g-4">
     <div class="col-md-6">
         <?php $mainImage = $images[0]['file_name'] ?? null; ?>
         <img id="mainImage"
-             src="<?= e(product_image_url($mainImage, 'full')) ?>"
-             alt="<?= e($images[0]['alt_text'] ?? $product['name']) ?>"
-             class="img-fluid rounded border mb-3"
-             style="aspect-ratio: 1/1; object-fit: cover; width: 100%;">
-
+            src="<?= e(product_image_url($mainImage, 'full')) ?>"
+            alt="<?= e($images[0]['alt_text'] ?? $product['name']) ?>"
+            class="img-fluid rounded border mb-3"
+            style="aspect-ratio: 1/1; object-fit: cover; width: 100%;">
         <?php if (count($images) > 1): ?>
             <div class="d-flex gap-2 flex-wrap">
                 <?php foreach ($images as $img): ?>
-                    <img src="<?= e(product_image_url($img['file_name'], 'thumb')) ?>"
-                         alt="<?= e($img['alt_text'] ?? $product['name']) ?>"
-                         class="border rounded thumb-select <?= $img['is_primary'] ? 'border-primary border-2' : '' ?>"
-                         style="width: 70px; height: 70px; object-fit: cover; cursor: pointer;"
-                         data-full="<?= e(product_image_url($img['file_name'], 'full')) ?>"
-                         data-alt="<?= e($img['alt_text'] ?? $product['name']) ?>">
+                    <img src="<?= e(product_image_url(
+                                    $img['file_name'],
+                                    'thumb'
+                                )) ?>"
+                        alt="<?= e($img['alt_text'] ?? $product['name'])
+                                ?>"
+                        class="border rounded thumb-select <?=
+                                                            $img['is_primary'] ? 'border-primary border-2' : '' ?>"
+                        style="width: 70px; height: 70px; object-fit:
+cover; cursor: pointer;"
+                        data-full="<?=
+                                    e(product_image_url($img['file_name'], 'full')) ?>"
+                        data-alt="<?= e($img['alt_text'] ??
+                                        $product['name']) ?>">
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
     </div>
-
     <div class="col-md-6">
+
         <h1 class="h3"><?= e($product['name']) ?></h1>
         <p class="text-muted mb-2">
-            Thương hiệu: <?= e($product['brand'] ?: 'Đang cập nhật') ?> &middot;
+            Thương hiệu: <?= e($product['brand'] ?: 'Đang cập nhật') ?>
+            &middot;
             Mã SP: <?= e($product['sku']) ?>
         </p>
         <?php if ((int) $product['stock'] > 0): ?>
@@ -44,11 +51,26 @@
         <?php else: ?>
             <span class="badge bg-danger mb-3">Hết hàng</span>
         <?php endif; ?>
-        <p class="fs-3 text-danger fw-bold"><?= format_vnd($product['price']) ?></p>
-        <p style="white-space: pre-line;"><?= e($product['description']) ?></p>
+        <p class="fs-3 text-danger fw-bold"><?=
+                                            format_vnd($product['price']) ?></p>
+        <p style="white-space: pre-line;"><?= e($product['description'])
+                                            ?></p>
+
+        <form id="addToCartForm" class="d-flex align-items-center gap-2 mt-3" data-product-id="<?= (int) $product['id'] ?>">
+
+            <?= csrf_field() ?>
+            <input type="number" name="quantity" value="1" min="1" max="<?=
+                                                                        (int) $product['stock'] ?>"
+                class="form-control" style="width: 90px;" <?= (int)
+                                                            $product['stock'] <= 0 ? 'disabled' : '' ?>>
+            <button type="submit" class="btn btn-primary" <?= (int)
+                                                            $product['stock'] <= 0 ? 'disabled' : '' ?>>
+                Thêm vào giỏ hàng
+            </button>
+        </form>
+        <div id="addToCartMsg" class="mt-2 small"></div>
     </div>
 </div>
-
 <?php if (!empty($related)): ?>
     <hr class="my-5">
     <h2 class="h5 mb-3">Sản phẩm liên quan</h2>
@@ -58,16 +80,49 @@
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
-
 <script>
-document.querySelectorAll('.thumb-select').forEach(function (thumb) {
-    thumb.addEventListener('click', function () {
-        document.getElementById('mainImage').src = this.dataset.full;
-        document.getElementById('mainImage').alt = this.dataset.alt;
-        document.querySelectorAll('.thumb-select').forEach(function (t) {
-            t.classList.remove('border-primary', 'border-2');
+    document.querySelectorAll('.thumb-select').forEach(function(thumb) {
+        thumb.addEventListener('click', function() {
+            document.getElementById('mainImage').src = this.dataset.full;
+            document.getElementById('mainImage').alt = this.dataset.alt;
+            document.querySelectorAll('.thumb-select').forEach(function(t) {
+                t.classList.remove('border-primary', 'border-2');
+            });
+
+            this.classList.add('border-primary', 'border-2');
         });
-        this.classList.add('border-primary', 'border-2');
     });
-});
+    var addForm = document.getElementById('addToCartForm');
+    if (addForm) {
+        addForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var msg = document.getElementById('addToCartMsg');
+            var formData = new FormData(addForm);
+            formData.append('product_id', addForm.dataset.productId);
+            fetch('<?= e(base_url('cart/add')) ?>', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(function(res) {
+                    return res.json();
+                })
+                .then(function(data) {
+                    msg.textContent = data.message;
+                    msg.className = 'mt-2 small ' + (data.success ? 'text-success' : 'text-danger');
+                    if (data.success) {
+                        var badge = document.getElementById('cartBadge');
+                        if (badge) {
+                            badge.textContent = data.cart_count;
+                        }
+                    }
+                })
+                .catch(function() {
+                    msg.textContent = 'Có lỗi xảy ra, vui lòng thử lại.';
+                    msg.className = 'mt-2 small text-danger';
+                });
+        });
+    }
 </script>
